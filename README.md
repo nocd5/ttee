@@ -2,6 +2,12 @@
 
 tee command with time
 
+# Install
+
+```
+go get github.com/nocd5/ttee
+```
+
 # Usage
 
 ```bash

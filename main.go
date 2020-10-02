@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -42,8 +42,7 @@ func main() {
 			flg |= os.O_TRUNC
 		}
 		for _, f := range args {
-			file := new(os.File)
-			file, err = os.OpenFile(f, flg, 0666)
+			file, err := os.OpenFile(f, flg, 0666)
 			defer file.Close()
 			if err != nil {
 				panic(err)
@@ -52,25 +51,12 @@ func main() {
 		}
 	}
 
-	ts := time.Now()
-	stdin := bufio.NewScanner(os.Stdin)
-	for stdin.Scan() {
-		str := ""
-		if opts.ClockTime {
-			str = fmt.Sprintf("%s %s", time.Now().Format("[2006/01/02 15:04:05.000]"), stdin.Text())
-		} else {
-			d := time.Since(ts)
-			h := int(d.Hours())
-			m := int(d.Minutes()) % 60
-			s := int(d.Seconds()) % 60
-			ms := d.Milliseconds() % 1000
-			str = fmt.Sprintf("[%02d:%02d:%02d.%03d] %s", h, m, s, ms, stdin.Text())
-		}
-		fmt.Println(str)
-		for _, f := range files {
-			if f != nil {
-				fmt.Fprintln(f, str)
-			}
-		}
+	ttw := NewTteeWriter(os.Stdout, files, time.Now(), opts.ClockTime)
+	tr := io.TeeReader(os.Stdin, ttw)
+	s := bufio.NewScanner(tr)
+	for s.Scan() {
+	}
+	if err := s.Err(); err != nil {
+		panic(err)
 	}
 }

@@ -1,5 +1,7 @@
 # ttee【tiːtiː】
 
+![Build](https://github.com/nocd5/ttee/workflows/Build/badge.svg)
+
 tee command with time
 
 # Install
